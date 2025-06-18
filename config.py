@@ -1,13 +1,17 @@
-from pydantic import BaseSettings, Field
+from pydantic_settings import BaseSettings
+from pydantic import Field
 from typing import Optional
 
 
 class SecurityConfig(BaseSettings):
-    # Ollama Configuration
-    ollama_base_url: str = Field(
-        default="http://localhost:11434", description="Ollama API base URL"
+    # LLM Configuration
+    llm_endpoint: str = Field(
+        default="http://localhost:11434/v1", description="LLM API endpoint"
     )
-    ollama_model: str = Field(default="llama3.1", description="Ollama model to use")
+    llm_api_key: str = Field(default="ollama", description="LLM API key")
+    llm_model_name: str = Field(
+        default="qwen2.5-coder:latest", description="LLM model name"
+    )
 
     # CVE Database Configuration
     cve_api_url: str = Field(

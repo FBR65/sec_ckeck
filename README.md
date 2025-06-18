@@ -20,41 +20,56 @@ uv pip install -r requirements.txt
 
 2. Configure environment:
 ```bash
-cp .env.example .env
+cp .env .env.example
 # Edit .env with your settings
 ```
 
 3. Start Ollama (if not already running):
 ```bash
 ollama serve
-ollama pull qwen2.5-coder:latest
+ollama pull llama3.1
 ```
 
 ## Usage
 
-### Basic Vulnerability Scan
+### Using Direct Runner (Recommended)
 ```bash
-python -m sec_check scan 192.168.1.100
+cd c:\Users\frank\Documents\py_projects\dev\sec_ckeck
+python run_direct.py scan 192.168.1.100
+python run_direct.py cve-lookup CVE-2021-44228
 ```
 
-### Scan with Ethical Exploitation
+### Using Package Installation
 ```bash
-python -m sec_check scan 192.168.1.100 --exploit
+pip install -e .
+sec-check scan 192.168.1.100 --exploit
 ```
 
-### CVE Lookup
+### Command Examples
+
+#### Basic Vulnerability Scan
 ```bash
-python -m sec_check cve-lookup CVE-2021-44228
+python run_direct.py scan 192.168.1.100
 ```
 
-### Search CVEs by Product
+#### Scan with Ethical Exploitation
 ```bash
-python -m sec_check search-cves "Apache HTTP Server" --version "2.4"
+python run_direct.py scan 192.168.1.100 --exploit
 ```
 
-### View Configuration
+#### CVE Lookup
 ```bash
-python -m sec_check config-show
+python run_direct.py cve-lookup CVE-2021-44228
+```
+
+#### Search CVEs by Product
+```bash
+python run_direct.py search-cves "Apache HTTP Server" --version "2.4"
+```
+
+#### View Configuration
+```bash
+python run_direct.py config-show
 ```
 
 ## Architecture
@@ -77,13 +92,33 @@ The tool uses Pydantic models for type-safe security data handling:
 
 ## Configuration
 
-### Environment Variables
+### Environment Variables (.env file)
 
-- `OLLAMA_BASE_URL`: Ollama API endpoint (default: http://localhost:11434)
-- `OLLAMA_MODEL`: LLM model to use (default: qwen2.5-coder)
-- `ETHICAL_HACKING_MODE`: Enable/disable exploitation features (default: false)
-- `NVD_API_KEY`: Optional NVD API key for enhanced CVE data
-- `REPORT_OUTPUT_DIR`: Directory for generated reports (default: ./reports)
+```bash
+# LLM Configuration
+LLM_ENDPOINT=http://localhost:11434/v1
+LLM_API_KEY=ollama
+LLM_MODEL_NAME=qwen2.5-coder:latest
+
+# CVE Database Configuration
+CVE_API_URL=https://cve.circl.lu/api
+NVD_API_KEY=
+
+# Security Testing Configuration
+MAX_CONCURRENT_SCANS=5
+SCAN_TIMEOUT=300
+ETHICAL_HACKING_MODE=false
+
+# Reporting Configuration
+REPORT_OUTPUT_DIR=./reports
+```
+
+### LLM Configuration
+
+The tool uses PydanticAI with OpenAI-compatible providers:
+- **LLM_ENDPOINT**: Ollama API endpoint (default: http://localhost:11434/v1)
+- **LLM_API_KEY**: API key for authentication (default: "ollama")
+- **LLM_MODEL_NAME**: Model to use (default: llama3.1)
 
 ### Ethical Hacking Mode
 
@@ -100,6 +135,21 @@ The tool generates reports in multiple formats:
 2. **HTML**: Web-friendly format with styling
 3. **TXT**: Plain text format for terminal viewing
 
+## Prerequisites
+
+### Ollama Setup
+1. Install Ollama from https://ollama.ai
+2. Start Ollama service: `ollama serve`
+3. Pull required model: `ollama pull llama3.1`
+4. Verify endpoint is accessible at http://localhost:11434
+
+### Python Dependencies
+- Python 3.8+
+- PydanticAI with OpenAI provider support
+- Rich for CLI formatting
+- Typer for command-line interface
+- nmap for network scanning
+
 ## Safety and Legal Considerations
 
 ⚠️ **IMPORTANT**: This tool is designed for ethical security testing only.
@@ -110,6 +160,28 @@ The tool generates reports in multiple formats:
 - Use in isolated environments when possible
 - Keep exploitation modules disabled unless specifically needed
 
+## Troubleshooting
+
+### Common Issues
+
+1. **Module Import Errors**: Use `run_direct.py` instead of package imports
+2. **Ollama Connection**: Ensure Ollama is running on http://localhost:11434
+3. **Model Not Found**: Pull the required model with `ollama pull llama3.1`
+4. **Permission Errors**: Run scans only on authorized systems
+
+### Debug Commands
+
+```bash
+# Test Ollama connection
+curl http://localhost:11434/v1/models
+
+# Check configuration
+python run_direct.py config-show
+
+# Test CVE lookup
+python run_direct.py cve-lookup CVE-2021-44228
+```
+
 ## Integration with Other Tools
 
 The tool can be integrated with:
@@ -117,6 +189,7 @@ The tool can be integrated with:
 - SIEM systems for vulnerability management
 - Ticketing systems for remediation tracking
 - Custom dashboards via JSON API output
+
 
 ## License
 

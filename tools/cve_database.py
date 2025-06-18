@@ -3,8 +3,8 @@ import asyncio
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 
-from ..config import config
-from ..models.security_models import CVEInfo, SeverityLevel
+from sec_ckeck.config import config
+from sec_ckeck.models.security_models import CVEInfo, SeverityLevel
 
 
 class CVEDatabase:

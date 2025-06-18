@@ -153,8 +153,8 @@ def config_show():
     table.add_column("Setting", style="cyan")
     table.add_column("Value", style="white")
 
-    table.add_row("Ollama Base URL", config.ollama_base_url)
-    table.add_row("Ollama Model", config.ollama_model)
+    table.add_row("LLM Endpoint", config.llm_endpoint)
+    table.add_row("LLM Model", config.llm_model_name)
     table.add_row("CVE API URL", config.cve_api_url)
     table.add_row("Ethical Hacking Mode", str(config.ethical_hacking_mode))
     table.add_row("Max Concurrent Scans", str(config.max_concurrent_scans))
@@ -163,5 +163,10 @@ def config_show():
     console.print(table)
 
 
-if __name__ == "__main__":
+def main():
+    """Main entry point for the CLI."""
     app()
+
+
+if __name__ == "__main__":
+    main()

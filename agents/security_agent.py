@@ -1,16 +1,21 @@
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.models.openai import OpenAIModel
+from pydantic_ai.providers.openai import OpenAIProvider
 from typing import List, Dict, Any, Optional
 import asyncio
 import json
 from datetime import datetime
 
-from ..models.security_models import Vulnerability, SecurityReport, SeverityLevel
-from ..config import config
-from ..tools.vulnerability_scanner import VulnerabilityScanner
-from ..tools.exploit_engine import ExploitEngine
-from ..tools.cve_database import CVEDatabase
-from ..tools.report_generator import ReportGenerator
+from sec_ckeck.models.security_models import (
+    Vulnerability,
+    SecurityReport,
+    SeverityLevel,
+)
+from sec_ckeck.config import config
+from sec_ckeck.tools.vulnerability_scanner import VulnerabilityScanner
+from sec_ckeck.tools.exploit_engine import ExploitEngine
+from sec_ckeck.tools.cve_database import CVEDatabase
+from sec_ckeck.tools.report_generator import ReportGenerator
 
 
 class SecurityAgentDeps:
@@ -21,12 +26,9 @@ class SecurityAgentDeps:
         self.report_generator = ReportGenerator()
 
 
-# Configure Ollama as OpenAI-compatible model
-model = OpenAIModel(
-    "llama3.1",
-    base_url=config.ollama_base_url,
-    api_key="ollama",  # Ollama doesn't need real API key
-)
+# Configure OpenAI-compatible model with provider
+provider = OpenAIProvider(base_url=config.llm_endpoint, api_key=config.llm_api_key)
+model = OpenAIModel(provider=provider, model_name=config.llm_model_name)
 
 security_agent = Agent(
     model,
@@ -115,5 +117,7 @@ async def run_security_assessment(
     Provide detailed analysis and actionable recommendations.
     """
 
+    result = await security_agent.run(prompt)
+    return result.data
     result = await security_agent.run(prompt)
     return result.data
