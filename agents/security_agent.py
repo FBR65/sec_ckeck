@@ -6,16 +6,12 @@ import asyncio
 import json
 from datetime import datetime
 
-from sec_ckeck.models.security_models import (
-    Vulnerability,
-    SecurityReport,
-    SeverityLevel,
-)
-from sec_ckeck.config import config
-from sec_ckeck.tools.vulnerability_scanner import VulnerabilityScanner
-from sec_ckeck.tools.exploit_engine import ExploitEngine
-from sec_ckeck.tools.cve_database import CVEDatabase
-from sec_ckeck.tools.report_generator import ReportGenerator
+from models.security_models import Vulnerability, SecurityReport, SeverityLevel
+from config import config
+from tools.vulnerability_scanner import VulnerabilityScanner
+from tools.exploit_engine import ExploitEngine
+from tools.cve_database import CVEDatabase
+from tools.report_generator import ReportGenerator
 
 
 class SecurityAgentDeps:
@@ -82,6 +78,16 @@ async def attempt_exploitation(
 
 
 @security_agent.tool
+async def exploit_by_cve(
+    ctx: RunContext[SecurityAgentDeps], cve_id: str, target: str, port: int = None
+) -> Dict[str, Any]:
+    """Attempt exploitation based on specific CVE."""
+    if not config.ethical_hacking_mode:
+        return {"error": "CVE exploitation requires ethical hacking mode"}
+    return await ctx.deps.exploit_engine.exploit_by_cve(cve_id, target, port)
+
+
+@security_agent.tool
 async def generate_security_report(
     ctx: RunContext[SecurityAgentDeps],
     vulnerabilities: List[Vulnerability],
@@ -117,6 +123,10 @@ async def run_security_assessment(
     Provide detailed analysis and actionable recommendations.
     """
 
+    result = await security_agent.run(prompt)
+    return result.data
+    result = await security_agent.run(prompt)
+    return result.data
     result = await security_agent.run(prompt)
     return result.data
     result = await security_agent.run(prompt)

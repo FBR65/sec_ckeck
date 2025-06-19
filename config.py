@@ -15,7 +15,11 @@ class SecurityConfig(BaseSettings):
 
     # CVE Database Configuration
     cve_api_url: str = Field(
-        default="https://cve.circl.lu/api", description="CVE database API URL"
+        default="https://cve.circl.lu/api",
+        description="CVE database API URL (fallback)",
+    )
+    cve_org_api: str = Field(
+        default="https://cveawg.mitre.org/api", description="CVE.org API endpoint"
     )
     nvd_api_key: Optional[str] = Field(
         default=None, description="NVD API key for enhanced access"

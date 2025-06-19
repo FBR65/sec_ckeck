@@ -5,13 +5,13 @@ from typing import List, Dict, Any
 from jinja2 import Template
 import aiofiles
 
-from sec_ckeck.models.security_models import (
+from models.security_models import (
     SecurityReport,
     Vulnerability,
     SeverityLevel,
     RemediationStep,
 )
-from sec_ckeck.config import config
+from config import config
 
 
 class ReportGenerator:
