@@ -4,6 +4,7 @@ import os
 import sys
 from typing import List, Dict, Any
 from datetime import datetime
+import socket
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -54,7 +55,14 @@ class SecurityTestSuite:
     async def test_port_scanning(self):
         """Test port scanning functionality."""
         print("\n1. Testing Port Scanning...")
-        scanner = VulnerabilityScanner()
+
+        try:
+            scanner = VulnerabilityScanner()
+        except Exception as e:
+            print(f"  Warning: Could not initialize scanner: {e}")
+            print("  Continuing with basic network tests...")
+            await self._test_basic_connectivity()
+            return
 
         for service, target in self.test_targets.items():
             host = target.split(":")[0]
@@ -62,14 +70,44 @@ class SecurityTestSuite:
                 print(f"  Scanning {service} ({host})...")
                 vulnerabilities = await scanner.scan(host, "basic")
                 self.results[f"port_scan_{service}"] = {
-                    "target": target,
-                    "vulnerabilities_found": len(vulnerabilities),
-                    "vulnerabilities": [v.dict() for v in vulnerabilities],
+                    'target': target,
+                    'vulnerabilities_found': len(vulnerabilities),
+                    'vulnerabilities': [v.model_dump() for v in vulnerabilities]
                 }
                 print(f"    Found {len(vulnerabilities)} potential issues")
             except Exception as e:
                 print(f"    Error scanning {service}: {e}")
                 self.results[f"port_scan_{service}"] = {"error": str(e)}
+
+    async def _test_basic_connectivity(self):
+        """Test basic connectivity without nmap."""
+        print("  Testing basic connectivity...")
+
+        for service, target in self.test_targets.items():
+            host, port = target.split(":")
+            try:
+                # Test if port is open
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.settimeout(3)
+                result = sock.connect_ex((host, int(port)))
+                sock.close()
+
+                if result == 0:
+                    print(f"    ✓ {service} ({target}) is reachable")
+                    self.results[f"connectivity_{service}"] = {
+                        "status": "reachable",
+                        "target": target,
+                    }
+                else:
+                    print(f"    ✗ {service} ({target}) is not reachable")
+                    self.results[f"connectivity_{service}"] = {
+                        "status": "unreachable",
+                        "target": target,
+                    }
+
+            except Exception as e:
+                print(f"    Error testing {service}: {e}")
+                self.results[f"connectivity_{service}"] = {"error": str(e)}
 
     async def test_vulnerability_detection(self):
         """Test vulnerability detection on specific services."""
