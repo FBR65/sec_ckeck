@@ -1,0 +1,2 @@
+# Test authorized keys for vulnerable SSH container
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC7... testuser@vulnerable-test

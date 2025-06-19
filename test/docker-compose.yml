@@ -1,0 +1,114 @@
+version: '3.8'
+
+services:
+  # Vulnerable web applications
+  dvwa:
+    image: vulnerables/web-dvwa:latest
+    ports:
+      - "8080:80"
+    environment:
+      - MYSQL_HOSTNAME=mysql-dvwa
+      - MYSQL_DATABASE=dvwa
+      - MYSQL_USERNAME=root
+      - MYSQL_PASSWORD=password
+    depends_on:
+      - mysql-dvwa
+    networks:
+      - test-network
+
+  # WebGoat - OWASP vulnerable application
+  webgoat:
+    image: webgoat/webgoat-8.0:latest
+    ports:
+      - "8081:8080"
+    networks:
+      - test-network
+
+  # Vulnerable MySQL database
+  mysql-dvwa:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=dvwa
+    ports:
+      - "3306:3306"
+    networks:
+      - test-network
+
+  # Vulnerable SSH server
+  vulnerable-ssh:
+    image: linuxserver/openssh-server:latest
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+      - PUBLIC_KEY_FILE=/config/authorized_keys
+      - SUDO_ACCESS=false
+      - PASSWORD_ACCESS=true
+      - USER_PASSWORD=password123
+      - USER_NAME=testuser
+    ports:
+      - "2222:2222"
+    volumes:
+      - ./ssh-config:/config
+    networks:
+      - test-network
+
+  # Vulnerable FTP server
+  vulnerable-ftp:
+    image: stilliard/pure-ftpd:hardened
+    environment:
+      - PUBLICHOST=localhost
+      - FTP_USER_NAME=testuser
+      - FTP_USER_PASS=password123
+      - FTP_USER_HOME=/home/testuser
+    ports:
+      - "21:21"
+      - "30000-30009:30000-30009"
+    networks:
+      - test-network
+
+  # Vulnerable Apache server with old version
+  vulnerable-apache:
+    build: ./apache-vulnerable
+    ports:
+      - "8082:80"
+    networks:
+      - test-network
+
+  # Vulnerable Nginx server
+  vulnerable-nginx:
+    image: nginx:1.14-alpine  # Older version with known vulnerabilities
+    ports:
+      - "8083:80"
+    volumes:
+      - ./nginx-config:/etc/nginx/conf.d
+    networks:
+      - test-network
+
+  # Redis without authentication
+  vulnerable-redis:
+    image: redis:5.0-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass ""
+    networks:
+      - test-network
+
+  # MongoDB without authentication
+  vulnerable-mongo:
+    image: mongo:4.0
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=
+      - MONGO_INITDB_ROOT_PASSWORD=
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
